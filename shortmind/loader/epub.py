@@ -107,24 +107,23 @@ class EPUBBookLoader(BaseBookLoader):
 
     def process_item(self, item):
         soup = bs(item.content, "html.parser")
-        p_list = soup.findAll("p")
+        p_list = soup.findAll(["div", "p"])
 
         p_list = self.filter_nest_list(p_list, self.trans_taglist)
 
         text_list = []
-        p_block = []
-        block_len = 0
         for p in p_list:
             if not p.text or self._is_special_text(p.text):
                 continue
             new_p = self._extract_paragraph(copy(p))
-            text_list.append(new_p)
+            text_list.append(new_p.text)
 
         if soup:
             item.content = soup.encode()
-
         return text_list
 
     def list_items(self):
+        results = []
         for item in self.origin_book.get_items_of_type(ITEM_DOCUMENT):
-            print(self.process_item(item))
+            results.append(self.process_item(item))
+        return results
